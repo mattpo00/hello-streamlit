@@ -1,51 +1,39 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import streamlit as st
-from streamlit.logger import get_logger
+import pandas as pd
+from matplotlib import pyplot as plt
+import yfinance as yf
 
-LOGGER = get_logger(__name__)
+from datetime import datetime
 
+st.title("My financial dashboard")
+st.write("This dashboard is made to display some aggregated stats")
 
-def run():
-    st.set_page_config(
-        page_title="Hello",
-        page_icon="👋",
-    )
+def plot_my_df(values):
+    fig, ax = plt.subplots()
+    plt.xticks(rotation=90)
+    ax.plot(values, color="green", label="Open")
+    ax.legend()
+    st.pyplot(fig)
 
-    st.write("# Welcome to Streamlit! 👋")
+def plot_my_stats(values):
+  st.write("Summary of the stock")
+  st.write(values.agg(["min","max","mean"]))
+  if st.button("Plot the stats"):
+      st.write("Plot the Open Price")
+      plot_my_df(values['Open'])
+  else:
+      st.write("Not yet plotted")
 
-    st.sidebar.success("Select a demo above.")
+start_time = st.slider("When to start",
+                       min_value=datetime(2020, 1, 1, 9, 30),
+                       max_value=datetime(2022, 1, 1, 9, 30),
+                       format="MM/DD/YYYY")
 
-    st.markdown(
-        """
-        Streamlit is an open-source app framework built specifically for
-        Machine Learning and Data Science projects.
-        **👈 Select a demo from the sidebar** to see some examples
-        of what Streamlit can do!
-        ### Want to learn more?
-        - Check out [streamlit.io](https://streamlit.io)
-        - Jump into our [documentation](https://docs.streamlit.io)
-        - Ask a question in our [community
-          forums](https://discuss.streamlit.io)
-        ### See more complex demos
-        - Use a neural net to [analyze the Udacity Self-driving Car Image
-          Dataset](https://github.com/streamlit/demo-self-driving)
-        - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
-    """
-    )
+stock_name = st.selectbox("Stock-Name", ["GOOGL","AAPL","TSLA","AMD"])
+st.write(f"You have selected {stock_name}")
 
+# Download Google stock data
+df = yf.download(stock_name, start=start_time, end='2024-01-01')
 
-if __name__ == "__main__":
-    run()
+plot_my_stats(df)
+
